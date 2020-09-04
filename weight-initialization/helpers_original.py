@@ -5,16 +5,11 @@ import torch
 import torch.nn as nn
 import torch.optim
 
-from tqdm.notebook import tqdm
-
 
 def _get_loss_acc(model, train_loader, valid_loader):
     """
     Get losses and validation accuracy of example neural network
     """
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    print(f'device: {device}')
-    
     n_epochs = 2
     learning_rate = 0.001
     
@@ -26,19 +21,14 @@ def _get_loss_acc(model, train_loader, valid_loader):
 
     # Measurements used for graphing loss
     loss_batch = []
-    
-    model = model.to(device)
 
     for epoch in range(1, n_epochs+1):
-        print(f'=== epoch: {epoch} ===')
         # initialize var to monitor training loss
         train_loss = 0.0
         ###################
         # train the model #
         ###################
-        for i, (data, target) in enumerate(tqdm(train_loader)):
-            data = data.to(device)
-            target = target.to(device)
+        for data, target in train_loader:
             # clear the gradients of all optimized variables
             optimizer.zero_grad()
             # forward pass: compute predicted outputs by passing inputs to the model
@@ -55,10 +45,7 @@ def _get_loss_acc(model, train_loader, valid_loader):
     # after training for 2 epochs, check validation accuracy 
     correct = 0
     total = 0
-    
     for data, target in valid_loader:
-        data = data.to(device)
-        target = target.to(device)
         # forward pass: compute predicted outputs by passing inputs to the model
         output = model(data)
         # get the predicted class from the maximum class score
@@ -92,7 +79,6 @@ def compare_init_weights(
     assert len(model_list) <= len(colors), 'Too many initial weights to plot'
 
     for i, (model, label) in enumerate(model_list):
-        print(f'training model: {label}')
         loss, val_acc = _get_loss_acc(model, train_loader, valid_loader)
 
         plt.plot(loss[:plot_n_batches], colors[i], label=label)
@@ -118,6 +104,6 @@ def hist_dist(title, distribution_tensor, hist_range=(-4, 4)):
     """
     Display histogram of values in a given distribution tensor
     """
-    plt.hist(distribution_tensor, np.linspace(*hist_range, num=len(distribution_tensor)//2))
     plt.title(title)
+    plt.hist(distribution_tensor, np.linspace(*hist_range, num=len(distribution_tensor)/2))
     plt.show()
